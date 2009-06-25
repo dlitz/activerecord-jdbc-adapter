@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+abs_path() {
+    ruby -e 'puts File.expand_path(ARGV[0])' "$@"
+}
+
+topdir=`abs_path .`
+
+jruby -S rake clobber
+
+cd "$topdir"/drivers/derby
+jruby -S rake clobber
+
+cd "$topdir"/adapters/derby
+jruby -S rake clobber

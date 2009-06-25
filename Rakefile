@@ -114,7 +114,7 @@ Rake::Task['manifest'].invoke # Always regen manifest, so Hoe has up-to-date lis
 require File.dirname(__FILE__) + "/lib/jdbc_adapter/version"
 begin
   require 'hoe'
-  Hoe.new("activerecord-jdbc-adapter", JdbcAdapter::Version::VERSION) do |p|
+  Hoe.new("infonium-activerecord-jdbc-adapter", JdbcAdapter::Version::INFONIUM_VERSION) do |p|
     p.rubyforge_name = "jruby-extras"
     p.url = "http://jruby-extras.rubyforge.org/activerecord-jdbc-adapter"
     p.author = "Nick Sieger, Ola Bini and JRuby contributors"

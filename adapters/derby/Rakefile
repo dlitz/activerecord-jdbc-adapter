@@ -12,7 +12,7 @@ require "jdbc/derby"
 
 begin
   require 'hoe'
-  Hoe.new("activerecord-jdbcderby-adapter", JdbcAdapter::Version::VERSION) do |p|
+  Hoe.new("infonium-activerecord-jdbcderby-adapter", JdbcAdapter::Version::INFONIUM_VERSION) do |p|
     p.rubyforge_name = "jruby-extras"
     p.url = "http://jruby-extras.rubyforge.org/ActiveRecord-JDBC"
     p.author = "Nick Sieger, Ola Bini and JRuby contributors"
@@ -21,7 +21,7 @@ begin
     p.changes = "Updated to Derby version #{Jdbc::Derby::VERSION}."
     p.description = "Install this gem to use Derby with JRuby on Rails."
     p.extra_deps += [
-      ['activerecord-jdbc-adapter', "= #{JdbcAdapter::Version::VERSION}"],
+      ['infonium-activerecord-jdbc-adapter', "= #{JdbcAdapter::Version::INFONIUM_VERSION}"],
       ['jdbc-derby', ">= #{Jdbc::Derby::VERSION}"]]
   end.spec.dependencies.delete_if { |dep| dep.name == "hoe" }
 rescue LoadError
