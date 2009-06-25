@@ -1,6 +1,8 @@
 == 0.9.1 (Infonium fork)
 
 - Upgrade from derby-10.4.2.0.jar to derby-10.5.1.1.jar
+- Apply Chris Saunders' patch adding support for :limit and :offset (requires
+  Derby 10.5)
 
 == 0.9
 

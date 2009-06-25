@@ -379,6 +379,18 @@ module ::JdbcSpec
     def quoted_false
       '0'
     end
+
+    # Adding functionality to support FETCH and OFFSET which has been added in Derby 10.5.1.1
+    def add_limit_offset!(sql, options) #:nodoc:
+      #@limit = @offset = nil # Turn off the post-query limiting in <INSERT NAME OF JAVA FUNCTION THAT USES THIS HERE>
+      if options[:offset]
+        sql << " OFFSET #{options[:offset]} ROWS"
+      end
+      if options[:limit]
+        #ROWS/ROW and FIRST/NEXT mean the same
+        sql << " FETCH FIRST #{options[:limit]} ROWS ONLY"
+      end
+    end #add_limit_offset
   end
 end
 

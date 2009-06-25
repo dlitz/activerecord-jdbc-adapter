@@ -272,14 +272,6 @@ public class JdbcDerbySpec {
         }
     }
 
-    @JRubyMethod(name = "add_limit_offset!", required = 2)
-    public static IRubyObject add_limit_offset(IRubyObject recv, IRubyObject sql, IRubyObject options) {
-        IRubyObject limit = rubyApi.callMethod(options, "[]", recv.getRuntime().newSymbol("limit"));
-        rubyApi.setInstanceVariable(recv, "@limit",limit);
-        IRubyObject offset = rubyApi.callMethod(options, "[]", recv.getRuntime().newSymbol("offset"));
-        return rubyApi.setInstanceVariable(recv, "@offset",offset);
-    }
-
     @JRubyMethod(name = "_execute", required = 1, optional = 1)
     public static IRubyObject _execute(ThreadContext context, IRubyObject recv, IRubyObject[] args) throws SQLException, java.io.IOException {
         Ruby runtime = recv.getRuntime();
