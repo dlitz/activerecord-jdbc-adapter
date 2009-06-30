@@ -1,3 +1,7 @@
+== infonium-1.0.1 (Infonium fork of upstream version 0.9)
+
+- Revert to activerecord-jdbc-adapter 0.9
+
 == infonium-1.0.0 (Infonium fork of upstream version 0.9.1)
 
 - Upgrade from derby-10.4.2.0.jar to derby-10.5.1.1.jar
