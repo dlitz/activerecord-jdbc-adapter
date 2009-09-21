@@ -1,5 +1,6 @@
 == infonium-1.0.2 (Infonium fork of upstream version 0.9)
 
+- Apply (partial) patch from upstream 0.9.1 to add support for binary/date/time columns
 
 == infonium-1.0.1 (Infonium fork of upstream version 0.9)
 
