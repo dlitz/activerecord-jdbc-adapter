@@ -1,3 +1,6 @@
+== infonium-2.0 (Infonium fork of upstream version 0.9.2)
+
+
 == 0.9.2
 
 - The main, highly awaited fix for this release is a solution to the
