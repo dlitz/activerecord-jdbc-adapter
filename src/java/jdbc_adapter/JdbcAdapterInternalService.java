@@ -191,6 +191,29 @@ public class JdbcAdapterInternalService implements BasicLibraryService {
                             }
                         }
                     }
+                case 'v':
+                case 'V':
+                    switch(bl.bytes[p++]) {
+                    case 'a':
+                    case 'A':
+                        switch(bl.bytes[p++]) {
+                        case 'l':
+                        case 'L':
+                            switch(bl.bytes[p++]) {
+                            case 'u':
+                            case 'U':
+                                switch(bl.bytes[p++]) {
+                                case 'e':
+                                case 'E':
+                                    switch(bl.bytes[p++]) {
+                                    case 's':
+                                    case 'S':
+                                        return recv.getRuntime().getTrue();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
