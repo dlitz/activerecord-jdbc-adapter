@@ -1,5 +1,6 @@
 == infonium-2.0 (Infonium fork of upstream version 0.9.2)
 
+- ACTIVERECORD_JDBC-86: Fix raw queries starting with VALUES.
 
 == 0.9.2
 
