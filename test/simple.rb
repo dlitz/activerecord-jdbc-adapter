@@ -215,6 +215,48 @@ module SimpleTestMethods
 
     e = DbType.find(:first)
     assert_equal("ooop", e.sample_text)
+    
+    # Derby will normally reject any non text value.
+    # The adapter has been patched to convert non text values to strings
+    # TODO test and make this work for SQLServer and Oracle
+    if ActiveRecord::Base.connection.adapter_name =~ /derby/i
+      ['string', 45, 4.3, 18488425889503641645, true, false].each do |value|
+        assert_nothing_raised do
+          e.sample_text = value
+          e.save!
+          e.reload
+          assert_equal value.to_s, e.sample_text
+        end
+      end
+      [Time.now, Date.today].each do |value|
+        assert_nothing_raised do
+          e.sample_text = value
+          e.save!
+          e.reload
+          assert_equal value.to_s(:db), e.sample_text
+        end
+      end
+      value = {'a' => 7}
+      assert_nothing_raised do 
+        e.sample_text = value
+        e.save!
+        e.reload
+        assert_equal value.to_yaml, e.sample_text
+      end
+      value = BigDecimal.new("0")
+      assert_nothing_raised do 
+        e.sample_text = value
+        e.save!
+        e.reload
+        assert_equal '0.0', e.sample_text
+      end
+      assert_nothing_raised do 
+        e.sample_text = nil
+        e.save!
+        e.reload
+        assert_equal nil, e.sample_text
+      end
+    end
   end
 
   def test_string
