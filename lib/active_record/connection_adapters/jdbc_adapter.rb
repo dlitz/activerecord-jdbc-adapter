@@ -490,11 +490,17 @@ module ActiveRecord
       # Locate specialized adapter specification if one exists based on config data
       def adapter_spec(config)
         dialect = (config[:dialect] || config[:driver]).to_s
-        ::JdbcSpec.constants.map { |name| ::JdbcSpec.const_get name }.each do |constant|
-          if constant.respond_to? :adapter_matcher
-            spec = constant.adapter_matcher(dialect, config)
-            return spec if spec
+        2.times do
+          ::JdbcSpec.constants.map { |name| ::JdbcSpec.const_get name }.each do |constant|
+            if constant.respond_to? :adapter_matcher
+              spec = constant.adapter_matcher(dialect, config)
+              return spec if spec
+            end
           end
+
+          # If nothing matches and using jndi, try again using the database product name from the JNDI connection.
+          break unless config[:jndi]
+          dialect = Java::javax.naming.InitialContext.new.lookup(config[:jndi]).getConnection.getMetaData.getDatabaseProductName
         end
         nil
       end
