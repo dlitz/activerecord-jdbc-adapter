@@ -84,6 +84,13 @@ the adapter key and the JNDI location as follows:
       adapter: mysql
       jndi: jdbc/mysqldb
 
+   You can also leave the adapter as "jdbc", in which case the adapter will be
+   automatically detected (but you must manually put the driver jar on the classpath):
+
+    production:
+      adapter: jdbc
+      jndi: jdbc/mysqldb
+
 === Standalone, with ActiveRecord
 
 1. Install the gem with JRuby:
