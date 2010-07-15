@@ -501,6 +501,12 @@ module ActiveRecord
           # If nothing matches and we're using jndi, try to automatically detect the database.
           break unless config[:jndi] and !config[:dialect]
           config[:dialect] = Java::javax.naming.InitialContext.new.lookup(config[:jndi]).getConnection.getMetaData.getDatabaseProductName
+
+          # Derby-specific hack
+          if ::JdbcSpec::Derby.adapter_matcher(config[:dialect])
+            # Needed to set the correct database schema name
+            config[:username] ||= Java::javax.naming.InitialContext.new.lookup(config[:jndi]).getConnection.getMetaData.getUserName
+          end
         end
         nil
       end
