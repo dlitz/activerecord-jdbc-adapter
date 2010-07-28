@@ -64,6 +64,13 @@ module SimpleTestMethods
     assert_equal new_entry.id, entry.id
   end
 
+  def test_find_with_object
+    # This really only happens during functional tests
+    new_entry = Entry.create(:title => "Blah")
+    entry = Entry.find(new_entry)
+    assert_equal new_entry.id, entry.id
+  end
+
   def test_insert_returns_id
     unless ActiveRecord::Base.connection.adapter_name =~ /oracle/i
       value = ActiveRecord::Base.connection.insert("INSERT INTO entries (title, content, rating) VALUES('insert_title', 'some content', 1)")

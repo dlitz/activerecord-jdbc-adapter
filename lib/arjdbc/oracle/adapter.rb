@@ -340,6 +340,8 @@ module ::ArJdbc
     end
 
     def quote(value, column = nil) #:nodoc:
+      return value.quoted_id if value.respond_to?(:quoted_id)
+
       if column && [:text, :binary].include?(column.type)
         if /(.*?)\([0-9]+\)/ =~ column.sql_type
           %Q{empty_#{ $1.downcase }()}
