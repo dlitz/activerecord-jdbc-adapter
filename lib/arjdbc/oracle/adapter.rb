@@ -361,7 +361,12 @@ module ::ArJdbc
     end
 
     def quoted_date(value)
-      %Q{TIMESTAMP'#{super}'}
+      if value.acts_like?(:date)
+        # Oracle doesn't distinguish btw date/datetime
+        %Q{TO_DATE('#{super}', 'YYYY-MM-DD')}
+      else
+        %Q{TIMESTAMP'#{super}'}
+      end
     end
 
     def quoted_true #:nodoc:

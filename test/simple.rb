@@ -203,6 +203,20 @@ module SimpleTestMethods
     end
   end
 
+  def test_save_date_from_string
+    date = Date.new(2007)
+    e = DbType.find(:first)
+    e.sample_date = date.strftime("%Y-%m-%d")   # "2007-01-01"
+    e.save!
+    e = DbType.find(:first)
+    if DbType.columns_hash["sample_date"].type == :datetime
+      # Oracle doesn't distinguish btw date/datetime
+      assert_equal date, e.sample_date.to_date
+    else
+      assert_equal date, e.sample_date
+    end
+  end
+
   def test_boolean
     # An unset boolean should default to nil
     e = DbType.find(:first)
