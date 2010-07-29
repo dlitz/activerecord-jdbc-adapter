@@ -144,6 +144,17 @@ module SimpleTestMethods
       assert_equal time.in_time_zone, e.sample_datetime
     end
 
+    def test_save_time_from_string
+      t = Time.now      # local system time
+      #precision will only be expected to the second.
+      time = Time.local(t.year, t.month, t.day, t.hour, t.min, t.sec)   # local system time
+      e = DbType.find(:first)
+      e.sample_datetime = time.in_time_zone.strftime("%Y-%m-%d %H:%M:%S")    # Moscow time as string (will be saved as UTC in the database)
+      e.save!
+      e = DbType.find(:first)
+      assert_equal time.in_time_zone, e.sample_datetime
+    end
+
     def test_save_date_time
       t = Time.now
       #precision will only be expected to the second.
