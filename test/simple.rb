@@ -325,6 +325,18 @@ module SimpleTestMethods
     assert_equal("ooop", e.sample_string)
   end
 
+  def test_string_from_integer
+    e = DbType.find(:first)
+
+    # An empty string is treated as a null value in Oracle: http://www.techonthenet.com/oracle/questions/empty_null.php
+    assert_equal('', e.sample_string) unless ActiveRecord::Base.connection.adapter_name =~ /oracle/i
+    e.sample_string = 10
+    e.save!
+
+    e = DbType.find(:first)
+    assert_equal("10", e.sample_string)
+  end
+
   def test_save_binary
     #string is 60_000 bytes
     binary_string = "\000ABCDEFGHIJKLMNOPQRSTUVWXYZ'\001\003"*1#2_000
