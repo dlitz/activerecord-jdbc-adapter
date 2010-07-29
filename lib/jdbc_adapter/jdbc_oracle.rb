@@ -15,7 +15,11 @@ module ::JdbcSpec
           def after_save_with_oracle_lob
             self.class.columns.select { |c| c.sql_type =~ /LOB\(|LOB$/i }.each do |c|
               value = self[c.name]
-              value = value.to_yaml if unserializable_attribute?(c.name, c)
+              if unserializable_attribute?(c.name, c)
+                value = value.to_yaml
+              else
+                value = ::JdbcSpec::Oracle::Column.object_to_string(value, c)
+              end
               next if value.nil?  || (value == '')
 
               connection.write_large_object(c.type == :binary, c.name, self.class.table_name, self.class.primary_key, quote_value(id), value)
@@ -49,9 +53,16 @@ module ::JdbcSpec
         end
       end
 
+      # The comment for type_cast in ActiveRecord says:
+      #   Casts value (which is a String) to an appropriate instance.
+      # However, value is sometimes *not* a string, when type_cast is invoked
+      # by ActiveRecord::Dirty#field_changed?
+      #
+      # NOTE: This means that that type_cast must be idempotent.
       def type_cast(value)
         return nil if value.nil?
         case type
+        when :string, :text then JdbcSpec::Oracle::Column.object_to_string(value, self.class)
         when :datetime then JdbcSpec::Oracle::Column.string_to_time(value, self.class)
         else
           super
@@ -60,6 +71,7 @@ module ::JdbcSpec
 
       def type_cast_code(var_name)
         case type
+        when :string, :text then "JdbcSpec::Oracle::Column.object_to_string(#{var_name}, self.class)"
         when :datetime  then "JdbcSpec::Oracle::Column.string_to_time(#{var_name}, self.class)"
         else
           super
@@ -74,6 +86,29 @@ module ::JdbcSpec
       def self.guess_date_or_time(value)
         (value && value.hour == 0 && value.min == 0 && value.sec == 0) ?
         Date.new(value.year, value.month, value.day) : value
+      end
+
+      # Oracle is not permissive like MySQL. If you send a Date or Time to a CLOB
+      # or VARCHAR column, you'll get unexpected behaviour. This method turns
+      # non-stringy things into strings.
+      #
+      # NOTE: Must be idempotent
+      def self.object_to_string(value, column=nil) # :nodoc:
+        if value.nil? || value.is_a?(String) || value.is_a?(::ActiveSupport::Multibyte::Chars)
+          value
+        elsif value == true
+          "1"
+        elsif value == false
+          "0"
+        elsif value.is_a?(Integer) || value.is_a?(Float)
+          value.to_s
+        elsif value.is_a?(BigDecimal)
+          value.to_s("F")
+        elsif value.acts_like?(:date) || value.acts_like?(:time)
+          value.to_s(:db)
+        else
+          value.to_yaml
+        end
       end
 
       private
