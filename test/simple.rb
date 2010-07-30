@@ -155,6 +155,30 @@ module SimpleTestMethods
       assert_equal time.in_time_zone, e.sample_datetime
     end
 
+    def test_save_fixture
+      require 'active_record/fixtures'
+      fixture_data = {
+        "id" => 42,
+        "sample_timestamp" => "2007-01-01 14:15:16",
+        "sample_datetime" => "2007-01-01 14:15:16",
+        "sample_date" => "2007-01-01",
+        "sample_decimal" => 57.6,
+        "sample_small_decimal" => 2.8,
+        "sample_float" => 14.4,
+        "sample_boolean" => true,
+        "sample_string" => "foobar",
+        "sample_integer" => 5,
+        "sample_text" => "blah blag",
+      }
+      fixture = ::Fixture.new(fixture_data, DbType, @connection)
+      DbType.delete_all   # Clear the table
+      assert_nothing_raised do
+        @connection.insert_fixture(fixture, DbType.table_name)
+      end
+      e = DbType.find(:first)
+      assert_equal fixture_data["id"], e.id
+    end
+
     def test_save_date_time
       t = Time.now
       #precision will only be expected to the second.

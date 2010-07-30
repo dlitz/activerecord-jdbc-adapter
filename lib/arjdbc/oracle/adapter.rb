@@ -76,7 +76,7 @@ module ::ArJdbc
       end
 
       def self.guess_date_or_time(value)
-        (value && value.hour == 0 && value.min == 0 && value.sec == 0) ?
+        (value.is_a?(Date) || (value && value.hour == 0 && value.min == 0 && value.sec == 0)) ?
         Date.new(value.year, value.month, value.day) : value
       end
 
@@ -410,6 +410,27 @@ module ::ArJdbc
 
     def quoted_false #:nodoc:
       '0'
+    end
+
+    # XXX HACK -- ActiveRecord connection objects have a separate
+    # insert_fixture method that bypasses normal ActiveRecord processing, so
+    # we might end up with e.g. a string being inserted into a :datetime
+    # column, which Oracle can't handle.  To deal with this, we invoke
+    # type_cast to coerce the value back into its appropriate type before
+    # quoting it.  This isn't a perfect conversion (time zones might be
+    # different from what is expected, for example), but it should be good
+    # enough to make the test run.
+    #
+    # Mostly copied-and-pasted from ActiveRecord 2.3.5.
+    def insert_fixture(fixture, table_name)
+      list = fixture.inject([]) do |fixtures, (key, value)|
+        model_class = fixture.model_class
+        col = model_class.columns_hash[key] if model_class.respond_to?(:ancestors) && model_class.ancestors.include?(ActiveRecord::Base)
+        value = col.type_cast(value) if col.respond_to?(:type_cast)
+        fixtures << quote(value, col).gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
+      end
+      list = list * ', '
+      execute "INSERT INTO #{quote_table_name(table_name)} (#{fixture.key_list}) VALUES (#{list})", 'Fixture Insert'
     end
 
     private
