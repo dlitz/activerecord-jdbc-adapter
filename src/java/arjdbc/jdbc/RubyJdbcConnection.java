@@ -1036,22 +1036,13 @@ public class RubyJdbcConnection extends RubyObject {
     /**
      * Create a string which represents a sql type usable by Rails from the resultSet column
      * metadata object.
-     *
-     * @param numberAsBoolean the database uses decimal as a boolean data type
-     * because it does not support optional SQL92 type or mandatory SQL99
-     * booleans.
      */
-    private String typeFromResultSet(ResultSet resultSet, boolean numberAsBoolean) throws SQLException {
+    private String typeFromResultSet(ResultSet resultSet) throws SQLException {
         int precision = intFromResultSet(resultSet, COLUMN_SIZE);
         int scale = intFromResultSet(resultSet, DECIMAL_DIGITS);
 
-        // Assume db's which use decimal for boolean will not also specify a
-        // valid precision 1 decimal also.  Seems sketchy to me...
-        if (numberAsBoolean && precision != 1 &&
-            resultSet.getInt(DATA_TYPE) == java.sql.Types.DECIMAL) precision = -1;
-
         String type = resultSet.getString(TYPE_NAME);
-        if (precision > 0) {
+        if (precision > 0 && !(scale == -1 && type.equals("NUMBER"))) {
             type += "(" + precision;
             if(scale > 0) type += "," + scale;
             type += ")";
@@ -1074,7 +1065,6 @@ public class RubyJdbcConnection extends RubyObject {
             List columns = new ArrayList();
             List pkeyNames = new ArrayList();
             String clzName = metadata.getClass().getName().toLowerCase();
-            boolean isOracle = clzName.indexOf("oracle") != -1 || clzName.indexOf("oci") != -1;
 
             RubyHash types = (RubyHash) native_database_types();
             IRubyObject jdbcCol = getJdbcColumnClass(context);
@@ -1091,7 +1081,7 @@ public class RubyJdbcConnection extends RubyObject {
                             RubyString.newUnicodeString(runtime,
                                     caseConvertIdentifierForRails(metadata, colName)),
                             defaultValueFromResultSet(runtime, rs),
-                            RubyString.newUnicodeString(runtime, typeFromResultSet(rs, isOracle)),
+                            RubyString.newUnicodeString(runtime, typeFromResultSet(rs)),
                             runtime.newBoolean(!rs.getString(IS_NULLABLE).trim().equals("NO"))
                         });
                 columns.add(column);
