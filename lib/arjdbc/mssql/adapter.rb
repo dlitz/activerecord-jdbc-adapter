@@ -387,8 +387,36 @@ module ::ArJdbc
       end
     end
 
-    #SELECT .. FOR UPDATE is not supported on Microsoft SQL Server
+    # Microsoft SQL Server uses its own syntax for SELECT .. FOR UPDATE:
+    # SELECT .. FROM table1 WITH(ROWLOCK,UPDLOCK), table2 WITH(ROWLOCK,UPDLOCK) WHERE ..
+    #
+    # XXX - Does this handle sub-selects (:limit, :offset) and :include correctly?
     def add_lock!(sql, options)
+      if options[:lock] and sql =~ /\A(SELECT\s.*?)(\sFROM\s)(.*?)(\sWHERE\s.*|)\Z/mn
+        select_clause, from_word, from_tables, where_clause = [$1, $2, $3, $4]
+        with_clause = options[:lock].is_a?(String) ? " #{options[:lock]} " : " WITH(ROWLOCK,UPDLOCK) "
+
+        # Split the FROM clause into its constituent tables, and add the with clause after each one.
+        new_from_tables = []
+        s = StringScanner.new(from_tables)
+        until s.eos?
+          if s.scan_until /,|(INNER|CROSS|(LEFT|RIGHT|FULL)(\s+OUTER)?\s+JOIN)\s+/n
+            from_table = s.pre_match
+            operator = s.matched
+          else
+            from_table = s.rest
+            operator = ""
+            s.terminate
+          end
+          new_from_tables << from_table
+          unless from_table =~ /\A\s*\(SELECT/mi
+            # Don't add WITH clause to sub-selects
+            new_from_tables << with_clause
+          end
+          new_from_tables << operator
+        end
+        sql.replace([select_clause, from_word, new_from_tables, where_clause].flatten.join)
+      end
       sql
     end
 
