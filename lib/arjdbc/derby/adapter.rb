@@ -39,6 +39,7 @@ module ::ArJdbc
       def simplified_type(field_type)
         return :boolean if field_type =~ /smallint/i
         return :float if field_type =~ /real/i
+        return :datetime if field_type =~ /^timestamp/i
         super
       end
 
@@ -70,10 +71,10 @@ module ::ArJdbc
     # In Derby, the following cannot specify a limit:
     # - integer
     # - boolean (smallint)
-    # - timestamp
+    # - datetime (timestamp)
     # - date
     def type_to_sql(type, limit = nil, precision = nil, scale = nil) #:nodoc:
-      return super unless [:integer, :boolean, :timestamp, :date].include? type
+      return super unless [:integer, :boolean, :timestamp, :datetime, :date].include? type
 
       native = native_database_types[type.to_s.downcase.to_sym]
       native.is_a?(Hash) ? native[:name] : native
@@ -84,6 +85,7 @@ module ::ArJdbc
       tp[:string][:limit] = 256
       tp[:integer][:limit] = nil
       tp[:boolean] = {:name => "smallint"}
+      tp[:datetime] = {:name => "timestamp", :limit => nil}
       tp[:timestamp][:limit] = nil
       tp[:date][:limit] = nil
       tp
