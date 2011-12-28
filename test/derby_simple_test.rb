@@ -96,4 +96,24 @@ class DerbySimpleTest < Test::Unit::TestCase
       end
     end
   end
+
+  def test_data_types
+    expected_types = {
+      "id" => :integer,
+      "sample_binary" => :binary,
+      "sample_boolean" => :boolean,
+      "sample_date" => :date,
+      "sample_datetime" => :datetime,
+      "sample_decimal" => :integer,   # it's an :integer because the :scale is 0 (...right?)
+      "sample_float" => :float,
+      "sample_integer" => :integer,
+      "sample_small_decimal" => :decimal,
+      "sample_string" => :string,
+      "sample_text" => :text,
+      "sample_time" => :time,
+      "sample_timestamp" => :datetime,   # timestamp is just an alias for :datetime in Derby
+    }.to_a.sort{|a,b| a[0] <=> b[0]}
+
+    assert_equal expected_types, DbType.columns.map{|col| [col.name, col.type]}.sort{|a,b| a[0] <=> b[0]}
+  end
 end
